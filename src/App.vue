@@ -120,26 +120,32 @@
             <div class="row-value">{{ formatValue(item) }}</div>
             <div><button class="icon-btn" @click="openEdit(item)"><span class="material-icons-round">edit</span></button></div>
           </div>
-          <div v-if="totalPages > 1" class="pagination">
-          <button class="page-btn"
-            :disabled="currentPage === 1"
-            @click="currentPage--">
-            <span class="material-icons-round">chevron_left</span>
-          </button>
+          <div v-if="discounts.length > 0" class="pagination">
+            <select class="page-size-select" v-model="pageSize">
+              <option :value="5">5</option>
+              <option :value="10">10</option>
+              <option :value="25">25</option>
+              <option :value="50">50</option>
+            </select>
+            <span class="pagination-label">data per halaman</span>
 
-          <button
-            v-for="p in totalPages" :key="p"
-            class="page-btn" :class="{ active: p === currentPage }"
-            @click="currentPage = p">
-            {{ p }}
-          </button>
+            <div class="pagination-controls">
+              <button class="page-btn" :disabled="currentPage === 1" @click="currentPage--">
+                <span class="material-icons-round">chevron_left</span>
+              </button>
 
-          <button class="page-btn"
-            :disabled="currentPage === totalPages"
-            @click="currentPage++">
-            <span class="material-icons-round">chevron_right</span>
-          </button>
-        </div>
+              <template v-for="p in pageButtons" :key="p">
+                <span v-if="p === '...'" class="page-ellipsis">…</span>
+                <button v-else class="page-btn" :class="{ active: p === currentPage }" @click="currentPage = p">
+                  {{ p }}
+                </button>
+              </template>
+
+              <button class="page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
+                <span class="material-icons-round">chevron_right</span>
+              </button>
+            </div>
+          </div>
         </template>
       </div>
     </div>
@@ -186,7 +192,17 @@ const deleteModal = ref({ show: false, bulk: false, itemId: null, itemName: '' }
 
 // ── Pagination ────────────────────────────────────────────
 const currentPage = ref(1)
-const pageSize = 10
+const pageSize = ref(10)
+
+const pageButtons = computed(() => {
+  const total = totalPages.value
+  const cur = currentPage.value
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+
+  if (cur <= 3) return [1, 2, 3, 4, '...', total]
+  if (cur >= total - 2) return [1, '...', total-3, total-2, total-1, total]
+  return [1, '...', cur - 1, cur, cur + 1, '...', total]
+})
 
 const allFiltered = computed(() => {
   let list = [...discounts.value]
@@ -203,14 +219,12 @@ const allFiltered = computed(() => {
   return list
 })
 
-const totalPages = computed(() => Math.ceil(allFiltered.value.length / pageSize))
-
+const totalPages = computed(() => Math.ceil(allFiltered.value.length / pageSize.value))
 const filteredDiscounts = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return allFiltered.value.slice(start, start + pageSize)
+  const start = (currentPage.value - 1) * pageSize.value
+  return allFiltered.value.slice(start, start + pageSize.value)
 })
-
-watch([searchQuery, sortField, sortAsc], () => { currentPage.value = 1 })
+watch([searchQuery, sortField, sortAsc, pageSize], () => { currentPage.value = 1 })
 
 // ── Computed lainnya ──────────────────────────────────────
 const existingNames = computed(() => discounts.value.map(d => d.nama_diskon))

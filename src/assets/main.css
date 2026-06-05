@@ -151,3 +151,55 @@ body {
 }
 .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .page-btn .material-icons-round { font-size: 18px; }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--md-outline);
+}
+.page-size-select {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--md-outline);
+  background: var(--md-surface);
+  font-size: 13px;
+  color: var(--md-on-surface);
+  cursor: pointer;
+  outline: none;
+}
+.page-size-select:focus { border-color: var(--md-primary); }
+.pagination-label {
+  font-size: 13px;
+  color: var(--md-on-surface-variant);
+  margin-right: auto;
+}
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.page-btn {
+  min-width: 34px; height: 34px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  border: none; background: transparent;
+  font-size: 13px; cursor: pointer;
+  color: var(--md-on-surface);
+  transition: background var(--transition);
+}
+.page-btn:hover:not(:disabled) { background: var(--md-surface-variant); }
+.page-btn.active {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  font-weight: 600;
+  border-radius: 50%;
+}
+.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.page-btn .material-icons-round { font-size: 18px; }
+.page-ellipsis {
+  min-width: 34px; height: 34px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--md-on-surface-variant);
+}
