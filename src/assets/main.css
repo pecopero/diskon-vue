@@ -125,3 +125,29 @@ body {
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 12px; font-weight: 700;
 }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--md-outline);
+}
+.page-btn {
+  min-width: 34px; height: 34px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  border: none; background: transparent;
+  font-size: 13px; cursor: pointer;
+  color: var(--md-on-surface);
+  transition: background var(--transition);
+}
+.page-btn:hover:not(:disabled) { background: var(--md-surface-variant); }
+.page-btn.active {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  font-weight: 600;
+}
+.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.page-btn .material-icons-round { font-size: 18px; }

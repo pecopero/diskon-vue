@@ -120,6 +120,26 @@
             <div class="row-value">{{ formatValue(item) }}</div>
             <div><button class="icon-btn" @click="openEdit(item)"><span class="material-icons-round">edit</span></button></div>
           </div>
+          <div v-if="totalPages > 1" class="pagination">
+          <button class="page-btn"
+            :disabled="currentPage === 1"
+            @click="currentPage--">
+            <span class="material-icons-round">chevron_left</span>
+          </button>
+
+          <button
+            v-for="p in totalPages" :key="p"
+            class="page-btn" :class="{ active: p === currentPage }"
+            @click="currentPage = p">
+            {{ p }}
+          </button>
+
+          <button class="page-btn"
+            :disabled="currentPage === totalPages"
+            @click="currentPage++">
+            <span class="material-icons-round">chevron_right</span>
+          </button>
+        </div>
         </template>
       </div>
     </div>
@@ -139,10 +159,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import DiskonForm from './components/DiskonForm.vue'
 import DeleteConfirm from './components/DeleteConfirm.vue'
 
+// ── API & outlet ──────────────────────────────────────────
 const apiUrl = ref(localStorage.getItem('diskon_api_url') || '')
 const apiUrlInput = ref(apiUrl.value)
 const outletLabel = ref(localStorage.getItem('diskon_outlet_label') || 'Kopi Anak Bangsa')
@@ -150,6 +171,53 @@ const outletOpen = ref(false)
 const urlError = ref('')
 const showSetup = ref(false)
 
+// ── Data ──────────────────────────────────────────────────
+const discounts = ref([])
+const loading = ref(false)
+const saving = ref(false)
+const searchQuery = ref('')
+const sortField = ref('name')
+const sortAsc = ref(true)
+const selectedIds = ref([])
+const newIds = ref([])
+const toast = ref({ show: false, message: '' })
+const modal = ref({ show: false, mode: 'add', item: null })
+const deleteModal = ref({ show: false, bulk: false, itemId: null, itemName: '' })
+
+// ── Pagination ────────────────────────────────────────────
+const currentPage = ref(1)
+const pageSize = 10
+
+const allFiltered = computed(() => {
+  let list = [...discounts.value]
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
+    list = list.filter(d => d.nama_diskon?.toLowerCase().includes(q))
+  }
+  list.sort((a, b) => {
+    const va = sortField.value === 'name' ? (a.nama_diskon || '') : (Number(a.nilai) || 0)
+    const vb = sortField.value === 'name' ? (b.nama_diskon || '') : (Number(b.nilai) || 0)
+    if (typeof va === 'string') return sortAsc.value ? va.localeCompare(vb) : vb.localeCompare(va)
+    return sortAsc.value ? va - vb : vb - va
+  })
+  return list
+})
+
+const totalPages = computed(() => Math.ceil(allFiltered.value.length / pageSize))
+
+const filteredDiscounts = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return allFiltered.value.slice(start, start + pageSize)
+})
+
+watch([searchQuery, sortField, sortAsc], () => { currentPage.value = 1 })
+
+// ── Computed lainnya ──────────────────────────────────────
+const existingNames = computed(() => discounts.value.map(d => d.nama_diskon))
+const allSelected = computed(() => filteredDiscounts.value.length > 0 && filteredDiscounts.value.every(d => selectedIds.value.includes(d._id)))
+const someSelected = computed(() => filteredDiscounts.value.some(d => selectedIds.value.includes(d._id)))
+
+// ── Fungsi ────────────────────────────────────────────────
 function applyApiUrl() {
   const url = apiUrlInput.value.trim()
   if (!url) { urlError.value = 'URL tidak boleh kosong.'; return }
@@ -165,18 +233,6 @@ function applyApiUrl() {
   showSetup.value = false
   fetchDiscounts()
 }
-
-const discounts = ref([])
-const loading = ref(false)
-const saving = ref(false)
-const searchQuery = ref('')
-const sortField = ref('name')
-const sortAsc = ref(true)
-const selectedIds = ref([])
-const newIds = ref([])
-const toast = ref({ show: false, message: '' })
-const modal = ref({ show: false, mode: 'add', item: null })
-const deleteModal = ref({ show: false, bulk: false, itemId: null, itemName: '' })
 
 let toastTimer = null
 function showToast(msg) {
@@ -198,25 +254,6 @@ async function fetchDiscounts() {
     loading.value = false
   }
 }
-
-const filteredDiscounts = computed(() => {
-  let list = [...discounts.value]
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase()
-    list = list.filter(d => d.nama_diskon?.toLowerCase().includes(q))
-  }
-  list.sort((a, b) => {
-    const va = sortField.value === 'name' ? (a.nama_diskon || '') : (Number(a.nilai) || 0)
-    const vb = sortField.value === 'name' ? (b.nama_diskon || '') : (Number(b.nilai) || 0)
-    if (typeof va === 'string') return sortAsc.value ? va.localeCompare(vb) : vb.localeCompare(va)
-    return sortAsc.value ? va - vb : vb - va
-  })
-  return list
-})
-
-const existingNames = computed(() => discounts.value.map(d => d.nama_diskon))
-const allSelected = computed(() => filteredDiscounts.value.length > 0 && filteredDiscounts.value.every(d => selectedIds.value.includes(d._id)))
-const someSelected = computed(() => filteredDiscounts.value.some(d => selectedIds.value.includes(d._id)))
 
 function formatValue(item) {
   if (item.tipe === 'rp') return 'Rp ' + Number(item.nilai).toLocaleString('id-ID')
