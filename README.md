@@ -67,7 +67,7 @@ src/
 
 ## 🌐 Cara Penggunaan
 
-1. Buka aplikasi
+1. Buka aplikasi di URL : https://diskon-ez5fq16zr-pecoperos-projects.vercel.app
 2. Klik chip **outlet** di toolbar
 3. Masukkan API URL: `https://crudcrud.com/api/ecda943a26c54cfea19dec66658b4b16/DISKON`
 4. Klik **Terapkan**
