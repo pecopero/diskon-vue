@@ -74,5 +74,3 @@ src/
 5. Mulai kelola diskon
 
 ---
-
-2024 © PT Nusantara Berkah Digital
